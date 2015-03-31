@@ -10,14 +10,16 @@ object Main {
   def main(args: Array[String]) = {
 
     val r = new RedisClient("localhost", 6379)
-    r.flushall
+    
+    r.flushall // reset
 
+    /*** BASIC ***/
+    
     r.set("key", "some value")
     println(r.get("key").get) // some value
 
     r.set("connections", 10)
-    /*** incr is atomic! ***/
-    r.incr("connections")
+    r.incr("connections") // note: incr is atomic!
     println(r.get("connections").get) // 11
 
     r.del("connections")
@@ -31,6 +33,8 @@ object Main {
     r.set("expires", "redis demo 2")
     println(r.ttl("expires").get) // -1, no TTL is set
     println(r.ttl("expires2").get) // -2, doesn't exist
+
+    /*** LIST ***/
     
     r.rpush("numbers", 1)
     r.rpush("numbers", 2)
@@ -43,6 +47,8 @@ object Main {
     println(r.lrange("numbers", 0, -1).get.flatten)// List(1, 2, 3)
     r.rpop("numbers")
     println(r.lrange("numbers", 0, -1).get.flatten)// List(1, 2)
+    
+    /*** SET ***/
     
     r.sadd("integers", 1)
     r.sadd("integers", 23)
@@ -57,10 +63,14 @@ object Main {
     r.sadd("primes", 47)
     println(r.sunion("integers", "primes").get.flatten) // Set(1, 2, 3, 47)
     
+    /*** SORTED SET ***/
+    
     r.zadd("sortedSet", 1, "matt")
     r.zadd("sortedSet", 3, "chris")
     r.zadd("sortedSet", 2, "dom")
     println(r.zrange("sortedSet", 0, -1).get) // List(matt, dom, chris)
+    
+    /*** HASH ***/
     
     r.hset("hash", "user:007", "james")
     println(r.hget("hash", "user:007").get) // james
